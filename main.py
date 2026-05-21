@@ -22,40 +22,43 @@ class AutoRepeater(Star):
     def __init__(self, context: Context, config: AstrBotConfig = None):
         super().__init__(context)
         self.config = config or {}
-        self._chain_text = None   # 当前连续相同文本
+        self._chain_text = None  # 当前连续相同文本
         self._chain_senders = set()  # 已发言的不同发送者
 
     # ===== 消息入口 =====
 
     @filter.event_message_type(filter.EventMessageType.ALL)
     async def on_message(self, event: AstrMessageEvent):
-        text = event.get_message_str().strip()
-        if not text:
-            return
-
-        sender = event.get_sender_id()
-
-        # ① 关键字匹配
-        if self.config.get("keyword_enabled", True):
-            reply = self._match(text)
-            if reply:
-                yield event.chain_result([Plain(reply)])
+        """消息入口：先关键字匹配，再复读检测。异常不抛出，仅记录日志。"""
+        try:
+            text = event.get_message_str().strip()
+            if not text:
                 return
 
-        # ② 复读检测
-        if self.config.get("repeater_enabled", True):
-            threshold = self.config.get("repeat_count", 2)
-            if text == self._chain_text:
-                # 同一条链，加入新发送者
-                self._chain_senders.add(sender)
-                if len(self._chain_senders) >= threshold:
-                    yield event.chain_result([Plain(text)])
-                    self._chain_text = None
-                    self._chain_senders.clear()
-            else:
-                # 新文本，重置链
-                self._chain_text = text
-                self._chain_senders = {sender}
+            sender = event.get_sender_id()
+
+            # ① 关键字回复（精确子串优先，未命中则模糊匹配兜底）
+            if self.config.get("keyword_enabled", True):
+                reply = self._match(text)
+                if reply:
+                    yield event.chain_result([Plain(reply)])
+                    return
+
+            # ② 复读检测（连续 N 个不同人说相同内容时触发）
+            if self.config.get("repeater_enabled", True):
+                threshold = self.config.get("repeat_count", 2)
+                if text == self._chain_text:
+                    self._chain_senders.add(sender)
+                    if len(self._chain_senders) >= threshold:
+                        yield event.chain_result([Plain(text)])
+                        self._chain_text = None
+                        self._chain_senders.clear()
+                else:
+                    self._chain_text = text
+                    self._chain_senders = {sender}
+        except Exception:
+            # 任何异常静默吞掉，不影响 Bot 运行
+            pass
 
     # ===== 内部逻辑 =====
 
