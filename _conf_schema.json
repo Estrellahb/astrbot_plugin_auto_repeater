@@ -1,0 +1,42 @@
+{
+  "repeater_enabled": {
+    "type": "bool",
+    "description": "开启复读机",
+    "hint": "开启后，连续 N 个不同人说相同内容时 Bot 自动复读",
+    "default": true
+  },
+  "repeat_count": {
+    "type": "int",
+    "description": "复读触发人数",
+    "hint": "多少个不同的人连续说相同内容时触发复读",
+    "default": 2,
+    "slider": {
+      "min": 2,
+      "max": 10,
+      "step": 1
+    }
+  },
+  "keyword_enabled": {
+    "type": "bool",
+    "description": "开启关键字回复",
+    "hint": "开启后，消息包含预设关键词时自动回复对应内容",
+    "default": true
+  },
+  "fuzzy_threshold": {
+    "type": "float",
+    "description": "模糊匹配阈值",
+    "hint": "0-1，越高越严格。精确匹配始终生效，未命中时启用模糊匹配兜底",
+    "default": 0.6,
+    "slider": {
+      "min": 0.3,
+      "max": 1.0,
+      "step": 0.05
+    }
+  },
+  "keywords": {
+    "type": "text",
+    "description": "关键词列表 (JSON 格式)",
+    "hint": "每条包含 keywords (触发词列表) 和 reply (回复内容)。\n示例：{\"kazumi\": {\"keywords\": [\"看番\",\"樱花动漫\",\"追番\"], \"reply\": \"kazumi，下载：https://xxx\"}}",
+    "default": "{\"kazumi\": {\"keywords\": [\"看番\", \"樱花动漫\", \"动漫\", \"追番\", \"番剧软件\"], \"reply\": \"kazumi，下载：https://kazumi.app\"}}"
+  }
+}

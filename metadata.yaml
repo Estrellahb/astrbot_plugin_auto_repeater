@@ -1,0 +1,5 @@
+name: auto_repeater
+desc: 关键字自动回复 + 复读机，消息包含预设关键词自动回复，两人说相同内容自动复读
+version: 0.1.0
+author: Kita
+main: main.py
